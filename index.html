@@ -70,21 +70,30 @@
     <div id="toast" class="toast">Ключ скопирован!</div>
 
     <script>
+        // 1. Получаем ключ из URL (в твоем боте он уже safe_key)
         const params = new URLSearchParams(window.location.search);
         let key = params.get('key') || "";
         key = key.trim();
 
+        // 2. Формируем ссылки под каждое приложение
         if (key && (key.startsWith("vless") || key.startsWith("vmess"))) {
-            // Streisand (ест vless:// напрямую)
+            
+            // --- STREISAND ---
+            // Раз ты говоришь, что для него сработало - оставляем как было
             document.getElementById('btn-streisand').href = key;
             
-            // V2Box (через их протокол подписки)
+            // --- V2BOX ---
+            // Его стандартный протокол для импорта подписок
             document.getElementById('btn-v2box').href = "v2box://install-sub?url=" + encodeURIComponent(key);
             
-            // v2RayTun (пробуем чистый ключ, если не сработает - сменим на v2raytun://import/ в боте)
-            document.getElementById('btn-v2raytun').href = key;
+            // --- v2RayTun ---
+            // ВОТ ОНО! Используем формат конкурентов, который ты скинул
+            // Добавляем префикс V2raytun://import/ ПЕРЕД самим ключом vless://
+            document.getElementById('btn-v2raytun').href = "V2raytun://import/" + key;
+            
         }
 
+        // Функция копирования
         function copyKey() {
             if (!key) return;
             const tempInput = document.createElement("input");
