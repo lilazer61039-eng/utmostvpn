@@ -144,7 +144,7 @@
 
                     <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 15px; text-align: center;">Если приложение уже установлено, просто нажмите кнопку ниже:</p>
                     
-                    <a id="auto-connect-btn" class="glow-btn primary" target="_blank" href="#">⚡ АВТО-ПОДКЛЮЧЕНИЕ</a>
+                    <a id="auto-connect-btn" class="glow-btn primary" style="cursor: pointer;">⚡ АВТО-ПОДКЛЮЧЕНИЕ</a>
                     
                     <div class="key-copy-link" onclick="copyKey()">Не сработало? Скопировать ключ вручную</div>
                 </div>
@@ -186,11 +186,6 @@
         const urlParams = new URLSearchParams(window.location.search);
         const vpnKey = urlParams.get('key') || "";
 
-        const autoBtn = document.getElementById('auto-connect-btn');
-        if (vpnKey && (vpnKey.startsWith("vless") || vpnKey.startsWith("vmess"))) {
-            autoBtn.href = vpnKey;
-        }
-
         const appLinks = {
             v2raytun: { name: "V2rayTun", ios: "https://apps.apple.com/us/app/v2raytun/id6476628951", android: "https://play.google.com/store/apps/details?id=com.v2raytun.android" },
             happ: { name: "HAPP", ios: "https://apps.apple.com/us/app/happ-proxy-utility/id1615694295", android: "https://play.google.com/store/apps/details?id=com.happ.app" },
@@ -214,24 +209,37 @@
             }
         }
 
-        // --- УМНАЯ ОБРАБОТКА НАЖАТИЯ ---
+        // --- ТОТ САМЫЙ ХАК ДЛЯ ПРОБИТИЯ ЗАЩИТЫ TELEGRAM ---
+        const autoBtn = document.getElementById('auto-connect-btn');
+        
         autoBtn.addEventListener('click', function(e) {
-            if (!vpnKey) {
-                e.preventDefault();
-                tg.showAlert("❌ Ошибка ключа. Перезапустите бота.");
+            e.preventDefault(); // Забираем контроль у браузера
+            
+            if (!vpnKey || (!vpnKey.startsWith("vless") && !vpnKey.startsWith("vmess"))) {
+                tg.showAlert("❌ Ошибка ключа. Выйдите и запросите ключ в боте заново.");
                 return;
             }
             
-            // 1. Бесшумно копируем ключ на всякий случай
+            // 1. Тихо копируем в буфер (фолбэк)
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(vpnKey).catch(()=>{});
             }
 
-            // 2. Если Телеграм на телефоне заблокировал "вылет" из WebView в приложение, 
-            // юзер останется на странице. Через 1.5 секунды скажем ему об этом!
+            // 2. Метод 1: Прямая смена локации (Хорошо работает на Android)
+            window.location.href = vpnKey;
+
+            // 3. Метод 2: Трюк с невидимым iframe (Пробивает песочницу на iOS)
+            const iframe = document.createElement("iframe");
+            iframe.style.display = "none";
+            iframe.src = vpnKey;
+            document.body.appendChild(iframe);
+            
+            // Удаляем iframe через секунду, чтобы не засорять память
             setTimeout(() => {
-                tg.showAlert("✅ Ключ скопирован!\n\n(Telegram заблокировал прямой переход. Просто откройте приложение " + appLinks[currentApp].name + " и нажмите 'Импорт из буфера обмена')");
-            }, 1500);
+                if (document.body.contains(iframe)) {
+                    document.body.removeChild(iframe);
+                }
+            }, 1000);
         });
 
         function copyKey() {
@@ -243,11 +251,4 @@
         }
 
         function switchTab(tabId, btn) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById('tab-' + tabId).classList.add('active');
-            btn.classList.add('active');
-        }
-    </script>
-</body>
-</html>
+            document.querySelectorAll('.tab-content').forEach(el => el.classList
