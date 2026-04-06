@@ -93,6 +93,8 @@
             display: block; width: 100%; background: transparent; color: var(--neon-cyan); border: 2px solid var(--neon-cyan);
             padding: 15px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer;
             box-shadow: 0 0 10px rgba(0, 229, 255, 0.2) inset, 0 0 10px rgba(0, 229, 255, 0.2); transition: 0.2s;
+            text-decoration: none; /* Для ссылки */
+            text-align: center;
         }
         .glow-btn.primary { background: var(--neon-cyan); color: #000; box-shadow: 0 0 20px rgba(0, 229, 255, 0.4); }
         .glow-btn.primary:active { transform: scale(0.98); box-shadow: 0 0 30px rgba(0, 229, 255, 0.8); }
@@ -148,7 +150,7 @@
 
                     <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 15px; text-align: center;">Если приложение уже установлено, просто нажмите кнопку ниже:</p>
                     
-                    <button class="glow-btn primary" onclick="autoConnect()">⚡ АВТО-ПОДКЛЮЧЕНИЕ</button>
+                    <a id="auto-connect-btn" class="glow-btn primary" href="#" onclick="autoConnect(event)">⚡ АВТО-ПОДКЛЮЧЕНИЕ</a>
                     
                     <div class="key-copy-link" onclick="copyKey()">Не сработало? Скопировать ключ вручную</div>
                 </div>
@@ -190,45 +192,30 @@
         const urlParams = new URLSearchParams(window.location.search);
         const vpnKey = urlParams.get('key') || "";
 
-        // Ссылки на приложения в магазинах
+        // При загрузке страницы сразу вставляем ключ в ссылку для надежности
+        const autoBtn = document.getElementById('auto-connect-btn');
+        if (vpnKey && (vpnKey.startsWith("vless") || vpnKey.startsWith("vmess"))) {
+            autoBtn.href = vpnKey;
+        }
+
         const appLinks = {
-            v2raytun: {
-                name: "V2rayTun",
-                ios: "https://apps.apple.com/us/app/v2raytun/id6476628951",
-                android: "https://play.google.com/store/apps/details?id=com.v2raytun.android"
-            },
-            happ: {
-                name: "HAPP",
-                ios: "https://apps.apple.com/us/app/happ-proxy-utility/id1615694295", // Замените на точную ссылку, если отличается
-                android: "https://play.google.com/store/apps/details?id=com.happ.app" // Замените на точную ссылку
-            },
-            v2box: {
-                name: "V2Box",
-                ios: "https://apps.apple.com/us/app/v2box-v2ray-client/id6446814690",
-                android: "https://play.google.com/store/apps/details?id=com.v2box.app" // Замените на точную ссылку
-            }
+            v2raytun: { name: "V2rayTun", ios: "https://apps.apple.com/us/app/v2raytun/id6476628951", android: "https://play.google.com/store/apps/details?id=com.v2raytun.android" },
+            happ: { name: "HAPP", ios: "https://apps.apple.com/us/app/happ-proxy-utility/id1615694295", android: "https://play.google.com/store/apps/details?id=com.happ.app" },
+            v2box: { name: "V2Box", ios: "https://apps.apple.com/us/app/v2box-v2ray-client/id6446814690", android: "https://play.google.com/store/apps/details?id=com.v2box.app" }
         };
 
         let currentApp = 'v2raytun';
 
-        // Шаг 1: Выбор приложения
         function selectApp(appId, element) {
-            // Убираем выделение со всех кнопок
             document.querySelectorAll('.app-btn').forEach(btn => btn.classList.remove('selected'));
-            // Добавляем выделение выбранной
             element.classList.add('selected');
-            
             currentApp = appId;
             document.getElementById('selected-app-name').innerText = `в ${appLinks[appId].name}`;
             
-            // Показываем блок действий
             const actionBlock = document.getElementById('action-block');
             actionBlock.style.display = 'block';
             
-            // Плавный скролл вниз
-            setTimeout(() => {
-                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-            }, 100);
+            setTimeout(() => { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }, 100);
         }
 
         function openStore(os) {
@@ -239,26 +226,26 @@
             }
         }
 
-        // Шаг 2: Магическое авто-подключение (Deep Link)
-        function autoConnect() {
-            if (!vpnKey.startsWith("vless://")) {
+        // ИЗМЕНЕНИЕ ЗДЕСЬ: Новая мощная логика подключения
+        function autoConnect(e) {
+            if (!vpnKey || (!vpnKey.startsWith("vless") && !vpnKey.startsWith("vmess"))) {
+                e.preventDefault();
                 tg.showAlert("❌ Ошибка ключа. Попробуйте перезапустить бота.");
                 return;
             }
             
-            const a = document.createElement('a');
-            a.href = vpnKey;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            
-            setTimeout(() => {
-                window.location.href = vpnKey;
-            }, 300);
+            // Пытаемся открыть ссылку через официальный метод Телеграма (выход из песочницы)
+            try {
+                tg.openLink(vpnKey);
+                e.preventDefault(); // Если сработало, отменяем стандартный клик
+            } catch (err) {
+                // Если tg.openLink не сработал (бывает на ПК), просто позволяем тегу <a> сделать свою работу.
+                // e.preventDefault() тут НЕ вызываем.
+            }
         }
 
         function copyKey() {
-            if(vpnKey.startsWith("vless")) {
+            if(vpnKey.startsWith("vless") || vpnKey.startsWith("vmess")) {
                 navigator.clipboard.writeText(vpnKey).then(() => {
                     tg.showAlert("✅ Ключ скопирован в буфер обмена!");
                 });
