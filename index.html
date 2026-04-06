@@ -5,28 +5,173 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>UtmostVPN Setup</title>
     <style>
-        :root { --bg-color: #050505; --surface-color: #121212; --neon-cyan: #00e5ff; --text-main: #ffffff; --text-muted: #888888; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-main); -webkit-tap-highlight-color: transparent; padding: 20px; }
-        .header { text-align: left; margin-bottom: 30px; margin-top: 10px;}
-        .header h1 { font-size: 28px; font-weight: 800; color: var(--neon-cyan); text-transform: uppercase; letter-spacing: 1px;}
-        .section-title { font-size: 20px; font-weight: bold; margin-bottom: 10px; }
-        .section-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.4; }
-        .copy-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; background: #1a1a1a; color: var(--text-main); border: 1px solid rgba(255,255,255,0.1); padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 500; cursor: pointer; transition: 0.2s; margin-bottom: 30px; }
-        .app-item { display: flex; align-items: center; justify-content: space-between; background: #121212; border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 16px; margin-bottom: 15px; }
-        .app-info { display: flex; align-items: center; gap: 15px; }
-        .app-icon { width: 40px; height: 40px; border-radius: 10px; background: #222; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--neon-cyan); border: 1px solid rgba(0, 229, 255, 0.3);}
-        .app-name { font-size: 16px; font-weight: bold; }
-        .app-hint { font-size: 12px; color: var(--text-muted); }
-        .app-actions { display: flex; gap: 8px; }
-        .action-add { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 12px; background: rgba(0, 229, 255, 0.1); color: var(--neon-cyan); border: 1px solid var(--neon-cyan); font-size: 24px; font-weight: bold; text-decoration: none; }
-        .action-dl { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 12px; background: #1a1a1a; color: #fff; text-decoration: none; border: 1px solid rgba(255,255,255,0.1); }
-        .toast { position: fixed; bottom: -50px; left: 50%; transform: translateX(-50%); background: var(--neon-cyan); color: #000; padding: 12px 24px; border-radius: 20px; font-weight: bold; transition: 0.3s ease; opacity: 0; z-index: 1000; }
-        .toast.show { bottom: 30px; opacity: 1; }
+        :root {
+            --bg-color: #050505;
+            --surface-color: #121212;
+            --neon-cyan: #00e5ff;
+            --text-main: #ffffff;
+            --text-muted: #888888;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            -webkit-tap-highlight-color: transparent;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: left;
+            margin-bottom: 30px;
+            margin-top: 10px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .section-desc {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .copy-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            background: #1a1a1a;
+            color: var(--text-main);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-bottom: 30px;
+        }
+
+        .app-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #121212;
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 16px;
+            margin-bottom: 15px;
+        }
+
+        .app-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .app-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: #222;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--neon-cyan);
+            border: 1px solid rgba(0, 229, 255, 0.3);
+        }
+
+        .app-name {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .app-hint {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .app-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-add {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(0, 229, 255, 0.1);
+            color: var(--neon-cyan);
+            border: 1px solid var(--neon-cyan);
+            font-size: 24px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .action-dl {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: #1a1a1a;
+            color: #fff;
+            text-decoration: none;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--neon-cyan);
+            color: #000;
+            padding: 12px 24px;
+            border-radius: 20px;
+            font-weight: bold;
+            transition: 0.3s ease;
+            opacity: 0;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            bottom: 30px;
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
-    <div class="header"><h1>UtmostVPN</h1></div>
+
+    <div class="header">
+        <h1>UtmostVPN</h1>
+    </div>
+
     <h2 class="section-title">Выберите приложение</h2>
     <p class="section-desc">Для подключения к VPN понадобится одно из приложений, поддерживающих протокол VLESS.</p>
 
@@ -37,7 +182,10 @@
     <div class="app-item">
         <div class="app-info">
             <div class="app-icon">S</div>
-            <div><div class="app-name">Streisand</div><div class="app-hint">Авто-настройка</div></div>
+            <div>
+                <div class="app-name">Streisand</div>
+                <div class="app-hint">Авто-настройка</div>
+            </div>
         </div>
         <div class="app-actions">
             <a id="btn-streisand" href="#" class="action-add">+</a>
@@ -47,8 +195,11 @@
 
     <div class="app-item">
         <div class="app-info">
-            <div class="app-icon">BX</div>
-            <div><div class="app-name">V2Box</div><div class="app-hint">Добавьте ключ вручную</div></div>
+            <div class="app-icon" style="font-size: 14px;">BOX</div>
+            <div>
+                <div class="app-name">V2Box</div>
+                <div class="app-hint">Добавьте ключ вручную</div>
+            </div>
         </div>
         <div class="app-actions">
             <a id="btn-v2box" href="#" class="action-add">+</a>
@@ -59,7 +210,10 @@
     <div class="app-item">
         <div class="app-info">
             <div class="app-icon">V2</div>
-            <div><div class="app-name">v2RayTun</div><div class="app-hint">Лучший выбор</div></div>
+            <div>
+                <div class="app-name">v2RayTun</div>
+                <div class="app-hint">Лучший выбор</div>
+            </div>
         </div>
         <div class="app-actions">
             <a id="btn-v2raytun" href="#" class="action-add">+</a>
@@ -70,41 +224,40 @@
     <div id="toast" class="toast">Ключ скопирован!</div>
 
     <script>
-        // 1. Получаем ключ из URL (в твоем боте он уже safe_key)
-        const params = new URLSearchParams(window.location.search);
-        let key = params.get('key') || "";
+        // Читаем параметры из ссылки
+        var params = new URLSearchParams(window.location.search);
+        var key = params.get('key') || "";
         key = key.trim();
 
-        // 2. Формируем ссылки под каждое приложение
-        if (key && (key.startsWith("vless") || key.startsWith("vmess"))) {
+        if (key) {
+            // 1. Ссылка для Streisand
+            document.getElementById('btn-streisand').href = "streisand://import/" + key;
             
-            // --- STREISAND ---
-            // Раз ты говоришь, что для него сработало - оставляем как было
-            document.getElementById('btn-streisand').href = key;
+            // 2. Ссылка для V2Box (убираем vless:// и ставим v2box://vless//)
+            var cleanKey = key.replace("vless://", "");
+            document.getElementById('btn-v2box').href = "v2box://vless//" + cleanKey;
             
-            // --- V2BOX ---
-            // Его стандартный протокол для импорта подписок
-            document.getElementById('btn-v2box').href = "v2box://install-sub?url=" + encodeURIComponent(key);
-            
-            // --- v2RayTun ---
-            // ВОТ ОНО! Используем формат конкурентов, который ты скинул
-            // Добавляем префикс V2raytun://import/ ПЕРЕД самим ключом vless://
-            document.getElementById('btn-v2raytun').href = "V2raytun://import/" + key;
-            
+            // 3. Ссылка для v2RayTun
+            document.getElementById('btn-v2raytun').href = "v2raytun://import/" + key;
         }
 
-        // Функция копирования
+        // Функция копирования в буфер
         function copyKey() {
             if (!key) return;
-            const tempInput = document.createElement("input");
+            var tempInput = document.createElement("input");
             tempInput.value = key;
             document.body.appendChild(tempInput);
             tempInput.select();
+            tempInput.setSelectionRange(0, 99999);
             document.execCommand("copy");
             document.body.removeChild(tempInput);
-            const toast = document.getElementById('toast');
+
+            var toast = document.getElementById('toast');
+            toast.innerText = "Ключ скопирован!";
             toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2000);
+            setTimeout(function() {
+                toast.classList.remove('show');
+            }, 2000);
         }
     </script>
 </body>
