@@ -104,35 +104,49 @@
     <div id="toast">Ключ скопирован!</div>
 
     <script>
-        // Чистим кэш параметров
+        // 1. Получаем ключ из URL
         const params = new URLSearchParams(window.location.search);
-        const key = (params.get('key') || "").trim();
+        let key = params.get('key') || "";
+        key = key.trim();
 
-        if (key) {
-            const encoded = encodeURIComponent(key);
+        // 2. Формируем спец-ссылки для каждого приложения
+        if (key && (key.startsWith("vless") || key.startsWith("vmess"))) {
             
-            // 1. Для v2RayTun и HAPP - стандартный vless://
-            document.getElementById('link-v2ray').href = key;
+            // Для V2rayTun используем их прямой импорт
+            document.getElementById('btn-v2raytun').href = "v2raytun://import/" + key;
             
-            // 2. Для V2Box - специальный протокол импорта
-            document.getElementById('link-v2box').href = "v2box://install-sub?url=" + encoded;
+            // Для HAPP (они обычно едят vless напрямую, но добавим импорт на всякий случай)
+            document.getElementById('btn-happ').href = "happ://import/" + key;
             
-            // 3. Для Streisand - их собственный импорт
-            document.getElementById('link-streisand').href = "streisand://import/" + key;
+            // Для V2Box используем их стандартный протокол подписки
+            document.getElementById('btn-v2box').href = "v2box://install-sub?url=" + encodeURIComponent(key);
+            
+        } else {
+            // Если ключа нет, вешаем предупреждение
+            const addButtons = document.querySelectorAll('.action-add');
+            addButtons.forEach(btn => {
+                btn.onclick = (e) => {
+                    e.preventDefault();
+                    alert("Ошибка: Ключ не найден. Запросите его в боте заново.");
+                };
+            });
         }
 
+        // Функция копирования (оставляем как есть)
         function copyKey() {
             if (!key) return;
-            const el = document.createElement('textarea');
-            el.value = key;
-            document.body.appendChild(el);
-            el.select();
-            document.execCommand('copy');
-            document.body.removeChild(el);
-            
-            const t = document.getElementById('toast');
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 2000);
+            const tempInput = document.createElement("input");
+            tempInput.value = key;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            tempInput.setSelectionRange(0, 99999);
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+
+            const toast = document.getElementById('toast');
+            toast.innerText = "Ключ скопирован!";
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
         }
     </script>
 </body>
