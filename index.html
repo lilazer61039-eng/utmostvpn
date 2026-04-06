@@ -224,24 +224,28 @@
     <div id="toast" class="toast">Ключ скопирован!</div>
 
     <script>
-        // Читаем параметры из ссылки
+        // 1. Получаем ключ из URL
         var params = new URLSearchParams(window.location.search);
         var key = params.get('key') || "";
         key = key.trim();
 
         if (key) {
-            // 1. Ссылка для Streisand
-            document.getElementById('btn-streisand').href = "streisand://import/" + key;
+            // МАГИЯ: Убираем лишний слэш перед параметрами ( :443/? -> :443? )
+            // Это то, что отличает твою ссылку от ссылки конкурента
+            var cleanKey = key.replace("/?", "?");
+
+            // 1. Ссылка для Streisand (теперь будет без лишнего слэша)
+            document.getElementById('btn-streisand').href = "streisand://import/" + cleanKey;
             
             // 2. Ссылка для V2Box (убираем vless:// и ставим v2box://vless//)
-            var cleanKey = key.replace("vless://", "");
-            document.getElementById('btn-v2box').href = "v2box://vless//" + cleanKey;
+            var bodyKey = cleanKey.replace("vless://", "");
+            document.getElementById('btn-v2box').href = "v2box://vless//" + bodyKey;
             
             // 3. Ссылка для v2RayTun
-            document.getElementById('btn-v2raytun').href = "v2raytun://import/" + key;
+            document.getElementById('btn-v2raytun').href = "v2raytun://import/" + cleanKey;
         }
 
-        // Функция копирования в буфер
+        // Функция копирования (без изменений)
         function copyKey() {
             if (!key) return;
             var tempInput = document.createElement("input");
