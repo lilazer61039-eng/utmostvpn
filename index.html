@@ -39,33 +39,28 @@
         .tab-btn { flex: 1; padding: 15px 0; background: none; border: none; color: var(--text-muted); font-size: 14px; cursor: pointer; transition: 0.3s; font-weight: bold; }
         .tab-btn.active { color: var(--neon-cyan); box-shadow: 0 -2px 0 var(--neon-cyan) inset; text-shadow: 0 0 10px rgba(0,229,255,0.5); }
     </style>
+    
+    <script>
+        (function() {
+            const params = new URLSearchParams(window.location.search);
+            const key = params.get('key') || "";
+            const isRedirect = params.get('redirect');
+
+            if (isRedirect === 'true' && key) {
+                document.write(`
+                    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background:#050505; color:#fff; font-family:sans-serif;">
+                        <h2 style="color: #00e5ff;">Открываем приложение...</h2>
+                        <p style="color: #888; text-align:center; padding:20px;">Передаем ваш ключ.</p>
+                        <a href="${key}" style="display:block; padding:15px 30px; background:#00e5ff; color:#000; border-radius:12px; text-decoration:none; font-weight:bold; margin-top:20px;">Нажмите сюда, если ничего не произошло</a>
+                    </div>
+                `);
+                setTimeout(() => { window.location.href = key; }, 500);
+                window.stop(); // Останавливаем загрузку остального сайта
+            }
+        })();
+    </script>
 </head>
 <body>
-
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const vpnKey = urlParams.get('key') || "";
-        const isRedirect = urlParams.get('redirect');
-
-        // Если скрипт видит redirect=true, значит мы уже вырвались в Safari/Chrome!
-        if (isRedirect === 'true' && vpnKey) {
-            // Рисуем заглушку, чтобы юзер не пугался белого экрана
-            document.body.innerHTML = `
-                <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background:#050505; color:#fff; font-family:sans-serif;">
-                    <h2 style="color: #00e5ff;">Открываем приложение...</h2>
-                    <p style="color: #888; text-align:center; padding:20px;">Передаем ваш ключ.</p>
-                    <a href="${vpnKey}" style="display:block; padding:15px 30px; background:#00e5ff; color:#000; border-radius:12px; text-decoration:none; font-weight:bold; margin-top:20px;">Нажмите сюда, если ничего не произошло</a>
-                </div>
-            `;
-            // Через полсекунды браузер сам "тыкнет" на vless://
-            setTimeout(() => {
-                window.location.href = vpnKey;
-            }, 500);
-            
-            // Останавливаем загрузку остального сайта, он нам здесь уже не нужен
-            throw new Error("Redirect mode active"); 
-        }
-    </script>
 
     <div class="header"><h1>UtmostVPN</h1></div>
 
@@ -129,6 +124,9 @@
             document.getElementById('user-avatar').innerHTML = `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#00e5ff; font-weight:bold; font-size:20px;">${user.first_name.charAt(0)}</div>`;
         }
 
+        const urlParams = new URLSearchParams(window.location.search);
+        const vpnKey = urlParams.get('key') || "";
+
         const appLinks = {
             v2raytun: { name: "V2rayTun", ios: "https://apps.apple.com/us/app/v2raytun/id6476628951", android: "https://play.google.com/store/apps/details?id=com.v2raytun.android" },
             happ: { name: "HAPP", ios: "https://apps.apple.com/us/app/happ-proxy-utility/id1615694295", android: "https://play.google.com/store/apps/details?id=com.happ.app" },
@@ -159,7 +157,7 @@
             e.preventDefault(); 
             
             if (!vpnKey) {
-                tg.showAlert("❌ Ошибка ключа. Перезапустите бота.");
+                tg.showAlert("❌ Ошибка ключа. Выйдите и запросите ключ в боте заново.");
                 return;
             }
             
@@ -173,7 +171,6 @@
             currentUrl.searchParams.set('redirect', 'true');
             
             // tg.openLink() открывает ссылку во ВНЕШНЕМ браузере телефона (Safari/Chrome)
-            // Телеграм обязан пропустить этот запрос, потому что ссылка начинается на https://
             tg.openLink(currentUrl.toString());
         });
 
