@@ -110,29 +110,28 @@
         key = key.trim();
 
         // 2. Формируем спец-ссылки для каждого приложения
-        if (key && (key.startsWith("vless") || key.startsWith("vmess"))) {
+        if (key && (key.indexOf("vless://") !== -1 || key.indexOf("vmess://") !== -1)) {
             
-            // Для V2rayTun используем их прямой импорт
+            // --- ДЛЯ V2RAYTUN ---
+            // Пробуем два варианта: сначала прямой импорт через v2raytun://
+            // Если не сработает, юзер всегда может нажать кнопку "Скопировать"
             document.getElementById('btn-v2raytun').href = "v2raytun://import/" + key;
             
-            // Для HAPP (они обычно едят vless напрямую, но добавим импорт на всякий случай)
+            // --- ДЛЯ STREISAND (если ты его добавил в список) ---
+            // Он обычно отлично ест прямые ссылки vless://
+            // Если хочешь добавить его в HTML, используй id="btn-streisand"
+            const streisandBtn = document.getElementById('btn-streisand');
+            if(streisandBtn) streisandBtn.href = key;
+
+            // --- ДЛЯ HAPP ---
             document.getElementById('btn-happ').href = "happ://import/" + key;
             
-            // Для V2Box используем их стандартный протокол подписки
+            // --- ДЛЯ V2BOX ---
             document.getElementById('btn-v2box').href = "v2box://install-sub?url=" + encodeURIComponent(key);
             
-        } else {
-            // Если ключа нет, вешаем предупреждение
-            const addButtons = document.querySelectorAll('.action-add');
-            addButtons.forEach(btn => {
-                btn.onclick = (e) => {
-                    e.preventDefault();
-                    alert("Ошибка: Ключ не найден. Запросите его в боте заново.");
-                };
-            });
         }
 
-        // Функция копирования (оставляем как есть)
+        // Функция копирования (надежный запасной вариант)
         function copyKey() {
             if (!key) return;
             const tempInput = document.createElement("input");
@@ -146,7 +145,7 @@
             const toast = document.getElementById('toast');
             toast.innerText = "Ключ скопирован!";
             toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2000);
+            setTimeout(function() { toast.classList.remove('show'); }, 2000);
         }
     </script>
 </body>
