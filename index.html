@@ -5,168 +5,134 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>UtmostVPN Setup</title>
     <style>
-        :root { --bg-color: #050505; --surface-color: #121212; --neon-cyan: #00e5ff; --text-main: #ffffff; --text-muted: #888888; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-main); -webkit-tap-highlight-color: transparent; padding: 20px; }
+        :root { --bg-color: #050505; --neon-cyan: #00e5ff; --text-muted: #888888; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, system-ui, sans-serif; }
+        body { background-color: var(--bg-color); color: white; padding: 20px; }
         
-        .header { text-align: left; margin-bottom: 30px; margin-top: 10px;}
-        .header h1 { font-size: 28px; font-weight: 800; color: var(--neon-cyan); text-transform: uppercase; letter-spacing: 1px;}
+        .header { margin: 20px 0 30px; }
+        .header h1 { font-size: 28px; color: var(--neon-cyan); font-weight: 800; text-transform: uppercase; }
         
-        .section-title { font-size: 20px; font-weight: bold; margin-bottom: 10px; }
-        .section-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.4; }
+        .section-title { font-size: 20px; font-weight: bold; margin-bottom: 8px; }
+        .section-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.4; }
         
         .copy-btn {
             display: flex; align-items: center; justify-content: center; gap: 10px;
-            width: 100%; background: #1a1a1a; color: var(--text-main);
-            border: 1px solid rgba(255,255,255,0.1); padding: 16px; border-radius: 12px;
-            font-size: 16px; font-weight: 500; cursor: pointer; transition: 0.2s; margin-bottom: 30px;
+            width: 100%; background: #161616; border: 1px solid #333; padding: 16px;
+            border-radius: 14px; color: white; font-size: 16px; cursor: pointer; margin-bottom: 32px;
         }
-        .copy-btn:active { background: #2a2a2a; }
 
-        .app-item {
+        .app-card {
             display: flex; align-items: center; justify-content: space-between;
-            background: #121212; border: 1px solid rgba(255,255,255,0.05);
-            padding: 15px; border-radius: 16px; margin-bottom: 15px;
+            background: #111; border: 1px solid #222; padding: 16px;
+            border-radius: 18px; margin-bottom: 12px;
         }
         
-        .app-info { display: flex; align-items: center; gap: 15px; }
-        .app-icon { width: 40px; height: 40px; border-radius: 10px; background: #222; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--neon-cyan); border: 1px solid rgba(0, 229, 255, 0.3);}
+        .app-info { display: flex; align-items: center; gap: 12px; }
+        .app-icon { width: 44px; height: 44px; border-radius: 10px; background: #222; display:flex; align-items:center; justify-content:center; border: 1px solid #333; }
         .app-name { font-size: 16px; font-weight: bold; }
-        .app-hint { font-size: 12px; color: var(--text-muted); margin-top: 2px;}
+        .app-hint { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 
         .app-actions { display: flex; gap: 8px; }
         
-        /* Плюсик теперь снова чистая ссылка <a> */
-        .action-add {
+        /* Та самая кнопка плюсика */
+        .btn-plus {
             display: flex; align-items: center; justify-content: center;
             width: 44px; height: 44px; border-radius: 12px;
-            background: rgba(0, 229, 255, 0.1); color: var(--neon-cyan);
-            border: 1px solid var(--neon-cyan); font-size: 24px; font-weight: bold;
-            text-decoration: none; padding: 0;
+            background: rgba(0, 229, 255, 0.15); color: var(--neon-cyan);
+            border: 1px solid var(--neon-cyan); text-decoration: none;
+            font-size: 22px; font-weight: bold;
         }
-        .action-add:active { background: var(--neon-cyan); color: #000; }
-        
-        .action-dl {
+
+        .btn-dl {
             display: flex; align-items: center; justify-content: center;
             width: 44px; height: 44px; border-radius: 12px;
-            background: #1a1a1a; color: #fff;
-            text-decoration: none; border: 1px solid rgba(255,255,255,0.1);
+            background: #1a1a1a; border: 1px solid #333; color: white; text-decoration: none;
         }
-        
-        .toast {
-            position: fixed; bottom: -50px; left: 50%; transform: translateX(-50%);
-            background: var(--neon-cyan); color: #000; padding: 12px 24px;
-            border-radius: 20px; font-weight: bold; transition: 0.3s ease; opacity: 0; z-index: 1000;
+
+        #toast {
+            position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%);
+            background: var(--neon-cyan); color: black; padding: 12px 24px;
+            border-radius: 30px; font-weight: bold; transition: 0.4s;
         }
-        .toast.show { bottom: 30px; opacity: 1; }
+        #toast.show { bottom: 40px; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>UtmostVPN</h1>
-    </div>
+    <div class="header"><h1>UTMOST VPN</h1></div>
 
     <h2 class="section-title">Выберите приложение</h2>
     <p class="section-desc">Для подключения к VPN понадобится одно из приложений, поддерживающих протокол VLESS.</p>
 
-    <button class="copy-btn" onclick="copyKey()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-        Скопировать ключ
-    </button>
+    <button class="copy-btn" onclick="copyKey()">Скопировать ключ</button>
 
-    <h2 class="section-title">Мы рекомендуем:</h2>
+    <h2 class="section-title">Рекомендуем:</h2>
 
-    <div class="app-item">
+    <div class="app-card">
         <div class="app-info">
             <div class="app-icon">V2</div>
-            <div>
-                <div class="app-name">V2rayTun</div>
-                <div class="app-hint">Автоматическая настройка</div>
-            </div>
+            <div><div class="app-name">v2RayTun</div><div class="app-hint">Авто-настройка</div></div>
         </div>
         <div class="app-actions">
-            <a id="btn-v2raytun" href="#" class="action-add">+</a>
-            <a href="https://apps.apple.com/us/app/v2raytun/id6476628951" target="_blank" class="action-dl">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            </a>
+            <a id="link-v2ray" href="#" class="btn-plus">+</a>
+            <a href="https://apps.apple.com/us/app/v2raytun/id6476628951" class="btn-dl">↓</a>
         </div>
     </div>
 
-    <div class="app-item">
+    <div class="app-card">
         <div class="app-info">
-            <div class="app-icon">H</div>
-            <div>
-                <div class="app-name">HAPP</div>
-                <div class="app-hint">Альтернативный клиент</div>
-            </div>
+            <div class="app-icon">VB</div>
+            <div><div class="app-name">V2Box</div><div class="app-hint">Для iOS и Android</div></div>
         </div>
         <div class="app-actions">
-            <a id="btn-happ" href="#" class="action-add">+</a>
-            <a href="https://apps.apple.com/us/app/happ-proxy-utility/id1615694295" target="_blank" class="action-dl">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            </a>
+            <a id="link-v2box" href="#" class="btn-plus">+</a>
+            <a href="https://apps.apple.com/us/app/v2box-v2ray-client/id6446814690" class="btn-dl">↓</a>
         </div>
     </div>
 
-    <div class="app-item">
+    <div class="app-card">
         <div class="app-info">
-            <div class="app-icon" style="font-size: 14px;">BOX</div>
-            <div>
-                <div class="app-name">V2Box</div>
-                <div class="app-hint">Добавьте ключ вручную</div>
-            </div>
+            <div class="app-icon">S</div>
+            <div><div class="app-name">Streisand</div><div class="app-hint">Максимальная скорость</div></div>
         </div>
         <div class="app-actions">
-            <a id="btn-v2box" href="#" class="action-add">+</a>
-            <a href="https://apps.apple.com/us/app/v2box-v2ray-client/id6446814690" target="_blank" class="action-dl">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            </a>
+            <a id="link-streisand" href="#" class="btn-plus">+</a>
+            <a href="https://apps.apple.com/us/app/streisand/id6443534192" class="btn-dl">↓</a>
         </div>
     </div>
 
-    <div id="toast" class="toast">Ключ скопирован!</div>
+    <div id="toast">Ключ скопирован!</div>
 
     <script>
-        // Получаем ключ из URL
+        // Чистим кэш параметров
         const params = new URLSearchParams(window.location.search);
-        let key = params.get('key') || "";
-        key = key.trim();
+        const key = (params.get('key') || "").trim();
 
-        // Магия: сразу при загрузке страницы вписываем ключи напрямую в ссылки
-        if (key && (key.startsWith("vless") || key.startsWith("vmess"))) {
-            // Для V2rayTun и HAPP вставляем ключ как есть
-            document.getElementById('btn-v2raytun').href = key;
-            document.getElementById('btn-happ').href = key;
+        if (key) {
+            const encoded = encodeURIComponent(key);
             
-            // Для V2Box вставляем по их протоколу
-            document.getElementById('btn-v2box').href = "v2box://install-sub?url=" + encodeURIComponent(key);
-        } else {
-            // Если ключа почему-то нет
-            const addButtons = document.querySelectorAll('.action-add');
-            addButtons.forEach(btn => {
-                btn.onclick = (e) => {
-                    e.preventDefault();
-                    alert("Ошибка ключа. Попробуйте запросить его в боте заново.");
-                };
-            });
+            // 1. Для v2RayTun и HAPP - стандартный vless://
+            document.getElementById('link-v2ray').href = key;
+            
+            // 2. Для V2Box - специальный протокол импорта
+            document.getElementById('link-v2box').href = "v2box://install-sub?url=" + encoded;
+            
+            // 3. Для Streisand - их собственный импорт
+            document.getElementById('link-streisand').href = "streisand://import/" + key;
         }
 
-        // Кнопка копирования работает как обычно
         function copyKey() {
             if (!key) return;
-            const tempInput = document.createElement("input");
-            tempInput.value = key;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            tempInput.setSelectionRange(0, 99999);
-            document.execCommand("copy");
-            document.body.removeChild(tempInput);
-
-            const toast = document.getElementById('toast');
-            toast.innerText = "Ключ скопирован!";
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2000);
+            const el = document.createElement('textarea');
+            el.value = key;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            
+            const t = document.getElementById('toast');
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2000);
         }
     </script>
 </body>
