@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>UtmostVPN App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --surface-color: #121212;
+            --neon-cyan: #00e5ff;
+            --text-main: #ffffff;
+            --text-muted: #888888;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.1);
+        }
+        .header h1 {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px rgba(0, 229, 255, 0.6), 0 0 20px rgba(0, 229, 255, 0.4);
+            text-transform: uppercase;
+        }
+
+        .content { padding: 20px; padding-bottom: 80px; }
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card {
+            background: var(--surface-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .step-title {
+            font-size: 16px; font-weight: bold; margin-bottom: 15px; color: var(--neon-cyan);
+            display: flex; align-items: center; gap: 10px;
+        }
+        
+        .step-number {
+            background: var(--neon-cyan); color: #000; width: 24px; height: 24px;
+            border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: 900;
+        }
+
+        /* Список приложений */
+        .app-list { display: grid; gap: 12px; margin-bottom: 20px; }
+        .app-btn {
+            background: #1a1a1a; border: 1px solid rgba(255,255,255,0.1); color: white;
+            padding: 16px; border-radius: 12px; display: flex; justify-content: space-between;
+            align-items: center; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s;
+        }
+        .app-btn:active { transform: scale(0.98); }
+        .app-btn.selected {
+            background: rgba(0, 229, 255, 0.1); border-color: var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
+        }
+        .app-badge {
+            background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 8px;
+            font-size: 12px; font-weight: normal; color: var(--text-muted);
+        }
+
+        /* Блок выбранного приложения */
+        #action-block {
+            display: none; animation: fadeIn 0.4s ease; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;
+        }
+
+        .store-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .store-btn {
+            background: #222; border: 1px solid #333; color: white; padding: 12px; border-radius: 8px;
+            text-align: center; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+
+        .glow-btn {
+            display: block; width: 100%; background: transparent; color: var(--neon-cyan); border: 2px solid var(--neon-cyan);
+            padding: 15px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.2) inset, 0 0 10px rgba(0, 229, 255, 0.2); transition: 0.2s;
+        }
+        .glow-btn.primary { background: var(--neon-cyan); color: #000; box-shadow: 0 0 20px rgba(0, 229, 255, 0.4); }
+        .glow-btn.primary:active { transform: scale(0.98); box-shadow: 0 0 30px rgba(0, 229, 255, 0.8); }
+
+        .key-copy-link { text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 15px; text-decoration: underline; cursor: pointer; }
+
+        /* Профиль и ТабБар */
+        .profile-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .avatar { width: 60px; height: 60px; border-radius: 50%; background: #333; border: 2px solid var(--neon-cyan); }
+        .prof-info h2 { font-size: 18px; margin-bottom: 5px; }
+        .prof-info p { color: var(--text-muted); font-size: 14px; }
+        .status-badge { display: inline-block; padding: 5px 10px; background: rgba(0, 229, 255, 0.1); color: var(--neon-cyan); border-radius: 20px; font-size: 12px; border: 1px solid var(--neon-cyan); }
+        .tab-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--surface-color); display: flex; border-top: 1px solid rgba(255,255,255,0.05); padding-bottom: env(safe-area-bottom); }
+        .tab-btn { flex: 1; padding: 15px 0; background: none; border: none; color: var(--text-muted); font-size: 14px; cursor: pointer; transition: 0.3s; font-weight: bold; }
+        .tab-btn.active { color: var(--neon-cyan); box-shadow: 0 -2px 0 var(--neon-cyan) inset; text-shadow: 0 0 10px rgba(0,229,255,0.5); }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>UtmostVPN</h1>
+    </div>
+
+    <div class="content">
+        <div id="tab-connect" class="tab-content active">
+            <div class="card">
+                
+                <div class="step-title"><div class="step-number">1</div> Выберите приложение</div>
+                <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 15px;">В каком приложении вы хотите использовать наш VPN?</p>
+                
+                <div class="app-list">
+                    <div class="app-btn" onclick="selectApp('v2raytun', this)">
+                        <span>V2rayTun</span>
+                        <span class="app-badge">Рекомендуем</span>
+                    </div>
+                    <div class="app-btn" onclick="selectApp('happ', this)">
+                        <span>HAPP</span>
+                        <span class="app-badge">iOS / Android</span>
+                    </div>
+                    <div class="app-btn" onclick="selectApp('v2box', this)">
+                        <span>V2Box</span>
+                        <span class="app-badge">iOS / Android</span>
+                    </div>
+                </div>
+
+                <div id="action-block">
+                    <div class="step-title"><div class="step-number">2</div> Подключение <span id="selected-app-name" style="color: white; margin-left: 5px;"></span></div>
+                    
+                    <div class="store-grid" id="store-links">
+                        <div class="store-btn" onclick="openStore('ios')">🍎 Скачать iOS</div>
+                        <div class="store-btn" onclick="openStore('android')">🤖 Скачать Android</div>
+                    </div>
+
+                    <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 15px; text-align: center;">Если приложение уже установлено, просто нажмите кнопку ниже:</p>
+                    
+                    <button class="glow-btn primary" onclick="autoConnect()">⚡ АВТО-ПОДКЛЮЧЕНИЕ</button>
+                    
+                    <div class="key-copy-link" onclick="copyKey()">Не сработало? Скопировать ключ вручную</div>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="tab-profile" class="tab-content">
+            <div class="card">
+                <div class="profile-header">
+                    <div class="avatar" id="user-avatar"></div>
+                    <div class="prof-info">
+                        <h2 id="user-name">Загрузка...</h2>
+                        <p id="user-id">ID: ...</p>
+                    </div>
+                </div>
+                <div class="status-badge">✅ Подписка активна</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('connect', this)">Подключение</button>
+        <button class="tab-btn" onclick="switchTab('profile', this)">Профиль</button>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand(); 
+        tg.ready();
+
+        const user = tg.initDataUnsafe?.user;
+        if (user) {
+            document.getElementById('user-name').innerText = user.first_name + (user.last_name ? ' ' + user.last_name : '');
+            document.getElementById('user-id').innerText = 'ID: ' + user.id;
+            document.getElementById('user-avatar').innerHTML = `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#00e5ff; font-weight:bold; font-size:20px;">${user.first_name.charAt(0)}</div>`;
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const vpnKey = urlParams.get('key') || "";
+
+        // Ссылки на приложения в магазинах
+        const appLinks = {
+            v2raytun: {
+                name: "V2rayTun",
+                ios: "https://apps.apple.com/us/app/v2raytun/id6476628951",
+                android: "https://play.google.com/store/apps/details?id=com.v2raytun.android"
+            },
+            happ: {
+                name: "HAPP",
+                ios: "https://apps.apple.com/us/app/happ-proxy-utility/id1615694295", // Замените на точную ссылку, если отличается
+                android: "https://play.google.com/store/apps/details?id=com.happ.app" // Замените на точную ссылку
+            },
+            v2box: {
+                name: "V2Box",
+                ios: "https://apps.apple.com/us/app/v2box-v2ray-client/id6446814690",
+                android: "https://play.google.com/store/apps/details?id=com.v2box.app" // Замените на точную ссылку
+            }
+        };
+
+        let currentApp = 'v2raytun';
+
+        // Шаг 1: Выбор приложения
+        function selectApp(appId, element) {
+            // Убираем выделение со всех кнопок
+            document.querySelectorAll('.app-btn').forEach(btn => btn.classList.remove('selected'));
+            // Добавляем выделение выбранной
+            element.classList.add('selected');
+            
+            currentApp = appId;
+            document.getElementById('selected-app-name').innerText = `в ${appLinks[appId].name}`;
+            
+            // Показываем блок действий
+            const actionBlock = document.getElementById('action-block');
+            actionBlock.style.display = 'block';
+            
+            // Плавный скролл вниз
+            setTimeout(() => {
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            }, 100);
+        }
+
+        function openStore(os) {
+            if (appLinks[currentApp] && appLinks[currentApp][os]) {
+                tg.openLink(appLinks[currentApp][os]);
+            } else {
+                tg.showAlert("Ссылка для этой ОС пока недоступна.");
+            }
+        }
+
+        // Шаг 2: Магическое авто-подключение (Deep Link)
+        function autoConnect() {
+            if (!vpnKey.startsWith("vless://")) {
+                tg.showAlert("❌ Ошибка ключа. Попробуйте перезапустить бота.");
+                return;
+            }
+            
+            const a = document.createElement('a');
+            a.href = vpnKey;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            setTimeout(() => {
+                window.location.href = vpnKey;
+            }, 300);
+        }
+
+        function copyKey() {
+            if(vpnKey.startsWith("vless")) {
+                navigator.clipboard.writeText(vpnKey).then(() => {
+                    tg.showAlert("✅ Ключ скопирован в буфер обмена!");
+                });
+            }
+        }
+
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+    </script>
+</body>
+</html>
