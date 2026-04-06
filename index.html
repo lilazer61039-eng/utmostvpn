@@ -26,9 +26,12 @@
         #action-block { display: none; animation: fadeIn 0.4s ease; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; }
         .store-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .store-btn { background: #222; border: 1px solid #333; color: white; padding: 12px; border-radius: 8px; text-align: center; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        
+        /* Кнопка теперь чистая ссылка, без перехватчиков */
         .glow-btn { display: block; width: 100%; background: transparent; color: var(--neon-cyan); border: 2px solid var(--neon-cyan); padding: 15px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 0 10px rgba(0, 229, 255, 0.2) inset, 0 0 10px rgba(0, 229, 255, 0.2); transition: 0.2s; text-decoration: none; text-align: center; }
         .glow-btn.primary { background: var(--neon-cyan); color: #000; box-shadow: 0 0 20px rgba(0, 229, 255, 0.4); }
         .glow-btn.primary:active { transform: scale(0.98); box-shadow: 0 0 30px rgba(0, 229, 255, 0.8); }
+        
         .key-copy-link { text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 15px; text-decoration: underline; cursor: pointer; }
         .profile-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
         .avatar { width: 60px; height: 60px; border-radius: 50%; background: #333; border: 2px solid var(--neon-cyan); }
@@ -39,26 +42,6 @@
         .tab-btn { flex: 1; padding: 15px 0; background: none; border: none; color: var(--text-muted); font-size: 14px; cursor: pointer; transition: 0.3s; font-weight: bold; }
         .tab-btn.active { color: var(--neon-cyan); box-shadow: 0 -2px 0 var(--neon-cyan) inset; text-shadow: 0 0 10px rgba(0,229,255,0.5); }
     </style>
-    
-    <script>
-        (function() {
-            const params = new URLSearchParams(window.location.search);
-            const key = params.get('key') || "";
-            const isRedirect = params.get('redirect');
-
-            if (isRedirect === 'true' && key) {
-                document.write(`
-                    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background:#050505; color:#fff; font-family:sans-serif;">
-                        <h2 style="color: #00e5ff;">Открываем приложение...</h2>
-                        <p style="color: #888; text-align:center; padding:20px;">Передаем ваш ключ.</p>
-                        <a href="${key}" style="display:block; padding:15px 30px; background:#00e5ff; color:#000; border-radius:12px; text-decoration:none; font-weight:bold; margin-top:20px;">Нажмите сюда, если ничего не произошло</a>
-                    </div>
-                `);
-                setTimeout(() => { window.location.href = key; }, 500);
-                window.stop(); // Останавливаем загрузку остального сайта
-            }
-        })();
-    </script>
 </head>
 <body>
 
@@ -87,7 +70,8 @@
                         <div class="store-btn" onclick="openStore('android')">🤖 Скачать Android</div>
                     </div>
                     
-                    <a id="auto-connect-btn" class="glow-btn primary" style="cursor: pointer;">⚡ АВТО-ПОДКЛЮЧЕНИЕ</a>
+                    <a id="auto-connect-btn" class="glow-btn primary" href="#">⚡ АВТО-ПОДКЛЮЧЕНИЕ</a>
+                    
                     <div class="key-copy-link" onclick="copyKey()">Не сработало? Скопировать ключ вручную</div>
                 </div>
             </div>
@@ -124,8 +108,10 @@
             document.getElementById('user-avatar').innerHTML = `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#00e5ff; font-weight:bold; font-size:20px;">${user.first_name.charAt(0)}</div>`;
         }
 
+        // Получаем и очищаем ключ от лишних пробелов, которые могут ломать iOS
         const urlParams = new URLSearchParams(window.location.search);
-        const vpnKey = urlParams.get('key') || "";
+        let vpnKey = urlParams.get('key') || "";
+        vpnKey = vpnKey.trim();
 
         const appLinks = {
             v2raytun: { name: "V2rayTun", ios: "https://apps.apple.com/us/app/v2raytun/id6476628951", android: "https://play.google.com/store/apps/details?id=com.v2raytun.android" },
@@ -136,11 +122,24 @@
         let currentApp = 'v2raytun';
 
         function selectApp(appId, element) {
+            // Визуальное выделение
             document.querySelectorAll('.app-btn').forEach(btn => btn.classList.remove('selected'));
             element.classList.add('selected');
             currentApp = appId;
             document.getElementById('selected-app-name').innerText = `в ${appLinks[appId].name}`;
             document.getElementById('action-block').style.display = 'block';
+            
+            // МАГИЯ: Динамически формируем правильную нативную ссылку для выбранного приложения!
+            const btn = document.getElementById('auto-connect-btn');
+            
+            if (appId === 'v2box') {
+                // V2Box на iOS работает лучше всего через свой собственный протокол
+                btn.href = "v2box://install-sub?url=" + encodeURIComponent(vpnKey);
+            } else {
+                // V2rayTun и HAPP отлично едят чистый vless://
+                btn.href = vpnKey;
+            }
+            
             setTimeout(() => { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }, 100);
         }
 
@@ -149,30 +148,6 @@
                 tg.openLink(appLinks[currentApp][os]);
             }
         }
-
-        // --- ТОТ САМЫЙ ПОБЕГ ИЗ ПЕСОЧНИЦЫ ---
-        const autoBtn = document.getElementById('auto-connect-btn');
-        
-        autoBtn.addEventListener('click', function(e) {
-            e.preventDefault(); 
-            
-            if (!vpnKey) {
-                tg.showAlert("❌ Ошибка ключа. Выйдите и запросите ключ в боте заново.");
-                return;
-            }
-            
-            // На всякий случай копируем
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(vpnKey).catch(()=>{});
-            }
-
-            // Создаем ссылку для выхода во внешний браузер (добавляем &redirect=true)
-            const currentUrl = new URL(window.location.href);
-            currentUrl.searchParams.set('redirect', 'true');
-            
-            // tg.openLink() открывает ссылку во ВНЕШНЕМ браузере телефона (Safari/Chrome)
-            tg.openLink(currentUrl.toString());
-        });
 
         function copyKey() {
             if(vpnKey) {
